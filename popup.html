@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tab Manager</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Icon sprite (self-contained, referenced via <use href="#i-..."> and the icon() helper) -->
+  <svg id="icon-sprite" width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-xmark" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="7" y="5" width="3.2" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="13.8" y="5" width="3.2" height="14" rx="1" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24"><path d="M8 10l4-4 4 4M8 14l4 4 4-4"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 4l2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16.9l-4.7 2.35.9-5.23-3.8-3.7 5.25-.76z"/></symbol>
+    <symbol id="i-star-solid" viewBox="0 0 24 24"><path d="M12 4l2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16.9l-4.7 2.35.9-5.23-3.8-3.7 5.25-.76z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 13.5A8 8 0 1 1 10.5 4 6.5 6.5 0 0 0 20 13.5z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.7 2.6 15.3 0 18M12 3c-2.6 2.7-2.6 15.3 0 18"/></symbol>
+    <symbol id="i-layer-group" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12l9 5 9-5M3 16l9 5 9-5"/></symbol>
+    <symbol id="i-object-group" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="10" height="8" rx="1"/><rect x="10.5" y="10.5" width="10" height="8" rx="1"/></symbol>
+    <symbol id="i-object-ungroup" viewBox="0 0 24 24"><rect x="3" y="4" width="9" height="7" rx="1"/><rect x="12" y="13" width="9" height="7" rx="1"/></symbol>
+    <symbol id="i-up-right-from-square" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8 8"/><path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+    <symbol id="i-arrow-right-from-bracket" viewBox="0 0 24 24"><path d="M13 4h6a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-6"/><path d="M10 8l4 4-4 4M14 12H4"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M7 4h10a1 1 0 0 1 1 1v15l-6-4.5L6 20V5a1 1 0 0 1 1-1z"/></symbol>
+    <symbol id="i-volume-high" viewBox="0 0 24 24"><path d="M4 9v6h3l5 4V5L7 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.6 6.5a8 8 0 0 1 0 11"/></symbol>
+    <symbol id="i-volume-xmark" viewBox="0 0 24 24"><path d="M4 9v6h3l5 4V5L7 9z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="8" cy="7" r="2"/><path d="M4 7h2M10 7h10"/><circle cx="16" cy="12" r="2"/><path d="M4 12h10M18 12h2"/><circle cx="9" cy="17" r="2"/><path d="M4 17h3M11 17h9"/></symbol>
+  </svg>
+
+  <div class="container">
+    <header>
+      <img src="icons/bettertabsExtIcon.png" class="logo" alt="Tab Manager">
+      <h1>better.tabs</h1>
+      <div class="header-actions">
+        <button class="btn-icon" id="pause-current" title="Pause current tab"><svg class="icon" aria-hidden="true"><use href="#i-pause"></use></svg></button>
+        <button class="btn-icon" id="popout-btn" title="Pop out to its own window"><svg class="icon" aria-hidden="true"><use href="#i-up-right-from-square"></use></svg></button>
+        <button class="btn-icon" id="settings-btn" title="Settings"><svg class="icon" aria-hidden="true"><use href="#i-settings"></use></svg></button>
+        <button class="btn-theme" id="theme-toggle" title="Toggle dark mode"><svg class="icon" aria-hidden="true"><use href="#i-moon"></use></svg></button>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" id="tab-create">Group Tabs</button>
+      <button class="tab-btn" id="tab-groups">My Groups</button>
+    </nav>
+
+    <!-- Group Tabs Panel -->
+    <div class="panel active" id="panel-create">
+      <div id="status-bar"></div>
+
+      <div class="create-layout">
+        <!-- Window list sidebar (pop-out window, wide enough for 2 columns) -->
+        <aside class="window-sidebar" id="window-sidebar">
+          <label class="section-label">Windows</label>
+          <div id="window-list" class="window-list"></div>
+          <div class="window-options">
+            <button class="window-opt" id="win-focus"><svg class="icon" aria-hidden="true"><use href="#i-up-right-from-square"></use></svg> Bring window to front</button>
+            <button class="window-opt" id="win-move-selected"><svg class="icon" aria-hidden="true"><use href="#i-arrow-right-from-bracket"></use></svg> Move selected to new window</button>
+            <button class="window-opt window-opt-danger" id="win-close"><svg class="icon" aria-hidden="true"><use href="#i-xmark"></use></svg> Close window</button>
+          </div>
+        </aside>
+        <div class="sidebar-resizer" id="sidebar-resizer" title="Drag to resize"></div>
+
+        <div class="create-main">
+      <div class="section" id="scope-section">
+        <label class="section-label">Scope</label>
+        <!-- Toolbar popup: simple Current / All toggle -->
+        <div class="toggle-group" id="scope-toggle">
+          <button class="toggle-btn active" data-scope="current">Current Window</button>
+          <button class="toggle-btn" data-scope="all">All Windows</button>
+        </div>
+        <!-- Pop-out window (narrow): pick any open window -->
+        <select id="scope-select" class="input scope-select" hidden>
+          <option value="all">All Windows</option>
+        </select>
+      </div>
+
+      <div class="section domains-section">
+        <div class="domains-header">
+          <label class="section-label">Domains</label>
+          <div class="domain-header-btns">
+            <button class="link-btn" id="audio-filter" title="Show only tabs playing audio" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-volume-high"></use></svg></button>
+            <button class="link-btn" id="expand-all"   title="Expand all"><svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg></button>
+            <button class="link-btn" id="collapse-all" title="Collapse all"><svg class="icon" aria-hidden="true"><use href="#i-minus"></use></svg></button>
+            <label class="select-all-label">
+              <input type="checkbox" id="select-all"> All
+            </label>
+          </div>
+        </div>
+        <div class="domain-search-row">
+          <input type="search" id="domain-search" class="input domain-search" placeholder="Filter domains and tabs…">
+          <button class="link-btn domain-sort" id="sort-btn" title="Sort tabs" aria-haspopup="true" aria-expanded="false"><svg class="icon" aria-hidden="true"><use href="#i-sort"></use></svg></button>
+          <button class="link-btn domain-filter" id="group-filter-btn" title="Filter by group" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-layer-group"></use></svg></button>
+        </div>
+        <div id="domain-list" class="domain-list">
+          <p class="empty-msg">Loading tabs...</p>
+        </div>
+        <div class="tab-count-bar"><span id="tab-count" class="tab-count"></span></div>
+      </div>
+
+      <div id="create-options" hidden>
+        <select id="action-select" class="input action-select">
+          <option value="group">Group Tabs</option>
+          <option value="group-split">Group Tabs (keep windows separate)</option>
+          <option value="add-existing">Add to existing group</option>
+          <option value="new-window">Move to new window</option>
+          <option value="close">Close tabs</option>
+          <option value="bookmark">Bookmark Tabs</option>
+        </select>
+        <div class="action-row">
+          <input type="text" id="group-name" class="input action-name" placeholder="Group name…">
+          <button class="color-trigger" id="color-trigger" title="Choose color" aria-haspopup="true" aria-expanded="false">
+            <span class="color-trigger-dot" id="color-trigger-dot" style="background:#1a73e8"></span>
+          </button>
+          <select id="existing-group-select" class="input action-existing" hidden>
+            <option value="">groups</option>
+          </select>
+          <span id="action-hint" class="action-hint" hidden></span>
+          <button class="btn-confirm" id="action-confirm" title="Confirm" disabled><svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg></button>
+        </div>
+      </div>
+        </div><!-- /.create-main -->
+      </div><!-- /.create-layout -->
+    </div>
+
+    <!-- My Groups Panel -->
+    <div class="panel" id="panel-groups">
+      <input type="search" id="group-search" class="input group-search" placeholder="Filter groups and tabs…">
+      <div id="groups-list" class="groups-list">
+        <p class="empty-msg">Loading...</p>
+      </div>
+
+      <div id="merge-bar" hidden>
+        <hr class="panel-divider">
+        <div class="section row">
+          <div class="field">
+            <label class="section-label">Merged name</label>
+            <input type="text" id="merge-name" class="input" placeholder="Optional…">
+          </div>
+          <div class="field field-narrow">
+            <label class="section-label">Color</label>
+            <div class="color-picker" id="merge-color-picker">
+              <button class="swatch active" data-merge-color="blue"   style="background:#1a73e8"></button>
+              <button class="swatch"        data-merge-color="red"    style="background:#d93025"></button>
+              <button class="swatch"        data-merge-color="green"  style="background:#137333"></button>
+              <button class="swatch"        data-merge-color="yellow" style="background:#f9ab00"></button>
+              <button class="swatch"        data-merge-color="purple" style="background:#a142f4"></button>
+              <button class="swatch"        data-merge-color="pink"   style="background:#d01884"></button>
+              <button class="swatch"        data-merge-color="cyan"   style="background:#007b83"></button>
+              <button class="swatch"        data-merge-color="orange" style="background:#e37400"></button>
+              <button class="swatch"        data-merge-color="grey"   style="background:#5f6368"></button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-primary" id="merge-btn">Merge to current window</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sort menu (opened by the sort button in the Domains header) -->
+  <div id="sort-menu" class="context-menu sort-menu" hidden>
+    <button class="ctx-item sort-option" data-sort="recent"><svg class="icon ctx-icon ctx-check" aria-hidden="true"><use href="#i-check"></use></svg>Recent Tabs (Latest first)</button>
+    <button class="ctx-item sort-option" data-sort="old"><svg class="icon ctx-icon ctx-check" aria-hidden="true"><use href="#i-check"></use></svg>Recent Tabs (Oldest first)</button>
+    <button class="ctx-item sort-option" data-sort="count"><svg class="icon ctx-icon ctx-check" aria-hidden="true"><use href="#i-check"></use></svg>Most Tabs</button>
+    <button class="ctx-item sort-option" data-sort="alpha"><svg class="icon ctx-icon ctx-check" aria-hidden="true"><use href="#i-check"></use></svg>Alphabetical</button>
+  </div>
+
+  <!-- Per-group actions menu (opened by the dropdown arrow on a group card) -->
+  <div id="group-menu" class="context-menu group-menu" hidden>
+    <button class="ctx-item ctx-danger gm-close"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-xmark"></use></svg> Close all</button>
+    <button class="ctx-item gm-bookmark"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-bookmark"></use></svg> Bookmark</button>
+    <button class="ctx-item gm-add"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-plus"></use></svg> Add</button>
+    <button class="ctx-item gm-pause"><svg class="icon ctx-icon gm-pause-icon" aria-hidden="true"><use href="#i-pause"></use></svg> <span class="gm-label">Pause</span></button>
+    <button class="ctx-item ctx-danger gm-ungroup"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-object-ungroup"></use></svg> Ungroup</button>
+  </div>
+
+  <!-- Color picker menu (opened by the color trigger in the create row) -->
+  <div id="color-menu" class="context-menu color-menu" hidden>
+    <div class="color-grid" id="color-grid">
+      <button class="color-swatch" data-color="blue"   style="background:#1a73e8" title="Blue"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="red"    style="background:#d93025" title="Red"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="green"  style="background:#137333" title="Green"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="yellow" style="background:#f9ab00" title="Yellow"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="purple" style="background:#a142f4" title="Purple"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="pink"   style="background:#d01884" title="Pink"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="cyan"   style="background:#007b83" title="Cyan"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="orange" style="background:#e37400" title="Orange"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+      <button class="color-swatch" data-color="grey"   style="background:#5f6368" title="Grey"><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg></button>
+    </div>
+  </div>
+
+  <!-- Group filter menu (opened by the filter button; stays open for multi-select) -->
+  <div id="filter-menu" class="context-menu filter-menu" hidden>
+    <div class="filter-menu-head">
+      <span class="filter-menu-title">Show groups</span>
+      <button class="link-btn group-filter-clear" id="group-filter-clear">Reset</button>
+    </div>
+    <div id="group-filter-list" class="group-filter-list"></div>
+  </div>
+
+  <!-- Right-click context menu for tab rows -->
+  <div id="context-menu" class="context-menu" hidden>
+    <div id="ctx-main">
+      <button class="ctx-item" id="ctx-focus"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-up-right-from-square"></use></svg> Focus tab</button>
+      <div class="ctx-sep"></div>
+      <button class="ctx-item" id="ctx-pause"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-pause"></use></svg> Pause tab</button>
+      <button class="ctx-item" id="ctx-pause-selected" hidden></button>
+      <button class="ctx-item" id="ctx-resume-selected" hidden></button>
+      <div class="ctx-sep"></div>
+      <button class="ctx-item" id="ctx-add-to-group"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-object-group"></use></svg> Add to Group <svg class="icon ctx-arrow" aria-hidden="true"><use href="#i-chevron-right"></use></svg></button>
+      <button class="ctx-item" id="ctx-move-window"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-arrow-right-from-bracket"></use></svg> Move to new window</button>
+      <div class="ctx-sep"></div>
+      <button class="ctx-item ctx-danger" id="ctx-close"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-xmark"></use></svg> Close tab</button>
+      <button class="ctx-item ctx-danger" id="ctx-close-selected" hidden><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-xmark"></use></svg> Close selected tabs</button>
+    </div>
+    <div id="ctx-group-picker" hidden>
+      <button class="ctx-item" id="ctx-back"><svg class="icon ctx-icon" aria-hidden="true"><use href="#i-chevron-left"></use></svg> Back</button>
+      <div class="ctx-sep"></div>
+      <div id="ctx-group-list"></div>
+    </div>
+  </div>
+
+  <script src="utils.js"></script>
+  <script src="domains.js"></script>
+  <script src="groups.js"></script>
+  <script src="context-menu.js"></script>
+  <script src="bookmarks.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

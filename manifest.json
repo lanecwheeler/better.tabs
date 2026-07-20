@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "better.tabs",
+  "version": "1.0",
+  "description": "Group tabs by domain, bookmark them, and pause groups to save memory.",
+  "permissions": ["tabs", "tabGroups", "windows", "bookmarks"],
+  "web_accessible_resources": [
+    {
+      "resources": ["suspended.html"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "16": "icons/bettertabsExtIcon.png",
+    "48": "icons/bettertabsExtIcon.png",
+    "128": "icons/bettertabsExtIcon.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "better.tabs",
+    "default_icon": {
+      "16": "icons/bettertabsExtIcon.png",
+      "32": "icons/bettertabsExtIcon.png",
+      "48": "icons/bettertabsExtIcon.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  }
+}

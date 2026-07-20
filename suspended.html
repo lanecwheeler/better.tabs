@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tab Paused</title>
+  <link rel="stylesheet" href="suspended.css">
+</head>
+<body>
+  <main>
+    <div class="pause-icon" aria-hidden="true">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="28" cy="28" r="28" fill="#f1f3f4"/>
+        <rect x="17" y="16" width="8" height="24" rx="3" fill="#bdc1c6"/>
+        <rect x="31" y="16" width="8" height="24" rx="3" fill="#bdc1c6"/>
+      </svg>
+    </div>
+    <h1 id="tab-title">Tab Paused</h1>
+    <p id="tab-url" class="url"></p>
+    <button id="resume-btn">Resume Tab</button>
+    <p class="hint">Paused by better.tabs to save memory.</p>
+  </main>
+  <script src="suspended.js"></script>
+</body>
+</html>
