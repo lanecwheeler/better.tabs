@@ -1,7 +1,7 @@
 # better.tabs
 
 A Chrome extension for those who have issues hoarding tabs like I do. Group tabs by domain, sort, search, and
-filter them, pause groups to free up memory, and manage everything from a convienent extension.
+filter them, pause groups to free up memory, and manage everything from a convenient extension.
 
 Note: Co-Authored by Claude, tryna get used to an agentic workflow. It did pretty good I'd say...
 
